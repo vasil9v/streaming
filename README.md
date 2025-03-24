@@ -33,12 +33,12 @@ In this database, as in real life, all dogs are good dogs.
 
 ```
 npm install
-curl -i "http://localhost:9000/populate"
 ```
 
 ## Run
 
 ```
 node index.js &
+curl -i "http://localhost:9000/populate"  # call this endpoint to populate the database with some sample data
 open "http://localhost:9000/"  # or paste http://localhost:9000/ into a locally running browser
 ```
