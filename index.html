@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html class="no-js"> <!--<![endif]-->
+    <head>
+      <meta charset="utf-8">
+      <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+      <title>Streaming</title>
+      <meta name="description" content="Streaming">
+      <meta name="viewport" content="width=device-width">
+      <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+      <style>
+        body {
+          font-family: arial;
+        }
+        a {
+          text-decoration: none;
+        }
+        .event:hover {
+          background-color: #eee;
+        }
+        .alert {
+          display: none;
+        }
+        .hidden {
+          display: none;
+        }
+        .template {
+          display: none;
+        }
+      </style>
+    </head>
+    <body>
+        <div class="main">
+          <a href="#" class="aclickstart">Stop</a><br/>
+          Period: <input id="inptimeout" value="2000"><br/>
+          Size: <input id="inpsize" value="50"><br/>
+          <div class="page" id="divevents"></div>
+        </div>
+
+        <div class="template" id="templateevent">
+          Key: <span class="key"></span>
+          ID: <span class="id"></span>
+          TS: <span class="ts"></span>
+          Breed: <span class="breed"></span>
+          Good: <span class="is_good"></span>
+        </div>
+
+        <script>
+            let config = {
+              sitename: "Streaming",
+              init: 1000,
+              start: 1000,
+              end: 1050,
+              size: 50,
+              streaming: true,
+              inptimeout: 2000,
+            };
+            let navigateTo = function(sel) {
+              $(".page").hide();
+              return $(sel).show();
+            };
+            let muteEvent = function(e) {
+              e.preventDefault();
+              e.stopPropagation();
+            };
+
+            let prettyDate = function(s) {
+              return s;
+            };
+
+            let drawList = function(events, sel) {
+              $("#divevents").empty();
+              for (let e = 0; e < events.length; e += 1) {
+                // {"key":1096,"value":{"id":1096,"is_good":true,"breed":"French Bulldog","ts":1742849658880}}
+                let event = events[e];
+                let elem = $("#templateevent").clone().removeClass("template").attr("id", event.id);
+                elem.attr("data-id", event.id);
+                elem.find(".key").text(event.key);
+                elem.find(".id").text(event.value.id);
+                elem.find(".ts").text(event.value.ts);
+                elem.find(".breed").text(event.value.breed);
+                elem.find(".is_good").text(event.value.is_good);
+                $("#divevents").append(elem);
+              }
+            };
+
+            let getChunk = function (start, end, cb) {
+                $.ajax({
+                    url: "/stream?start=" + start + "&end=" + end,
+                    type: 'GET',
+                    contentType: 'application/json',
+                    success: cb,
+                    error: e => {
+                      console.log("error: " + JSON.stringify(e));
+                      cb(e.responseJSON);
+                    }
+                });
+            };
+
+            let poller = function () {
+              if(config.streaming) {
+                getChunk(config.start, config.end, function (data) {
+                  drawList(data, "#divevents")
+                  config.start += data.length;
+                  config.end += data.length;
+
+                  // loop
+                  if (data.length < config.size) {
+                    config.start = config.init;
+                    config.end = config.init + config.size;
+                  }
+                });
+              }
+              setTimeout(poller, config.inptimeout)
+            };
+
+            let handleClickStop = function (e) {
+              muteEvent(e);
+              let val = $(this).text();
+              if (val == "Stop") {
+                config.streaming = false;
+                $(this).text("Start");
+              }
+              else if (val == "Start") {
+                config.streaming = true;
+                $(this).text("Stop");
+              }
+            };
+
+            let handleChange = function (e) {
+              muteEvent(e);
+              let val = Number($(this).val());
+              // console.log($(this).attr("id") + ": " + val);
+              if ($(this).attr("id") == "inptimeout") {
+                config.inptimeout = val;
+              }
+              if ($(this).attr("id") == "inpsize") {
+                config.size = val;
+              }
+            };
+
+            $(document).ready(function() {
+              $("title").text(config.sitename);
+              $(".brand").text(config.sitename);
+              setTimeout(poller, config.inptimeout);
+              navigateTo("#divevents");
+              $(".aclickstart").click(handleClickStop);
+              $("#inptimeout").change(handleChange);
+              $("#inpsize").change(handleChange);
+            });
+        </script>
+    </body>
+</html>
