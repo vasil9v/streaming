@@ -54,6 +54,7 @@
 
               size: 100,
               inptimeout: 500,
+              lastDuration: 100,
               clientId: "client1"
             };
             const navigateTo = (sel) => {
@@ -124,16 +125,7 @@
               }
             };
 
-            const handleChange = function (e) {
-              muteEvent(e);
-              let val = Number($(this).val());
-              if ($(this).attr("id") == "inptimeout") {
-                config.inptimeout = val;
-              }
-              if ($(this).attr("id") == "inpsize") {
-                config.size = val;
-              }
-
+            const updateRate = () => {
               let cb = (data) => {
                 console.log('config: ' + JSON.stringify(data));
               };
@@ -150,10 +142,38 @@
               });
             };
 
+            const handleChange = function (e) {
+              muteEvent(e);
+              let val = Number($(this).val());
+              if ($(this).attr("id") == "inptimeout") {
+                config.inptimeout = val;
+              }
+              if ($(this).attr("id") == "inpsize") {
+                config.size = val;
+              }
+              updateRate();
+            };
+
             // websocket handlers
             const webSocket = new WebSocket('ws://localhost:9001/');
             webSocket.onmessage = (event) => {
-              drawList(JSON.parse(event.data), "#divevents");
+              let tsStart = Date.now();
+              let events = JSON.parse(event.data);
+              drawList(events, "#divevents");
+              let duration = Date.now() - tsStart;
+              console.log('duration: ' + duration);
+              if (events.length >= config.size) {
+                if (duration < config.lastDuration) {
+                  config.inptimeout = Math.round(0.9 * config.inptimeout);
+                  config.lastDuration = duration;
+                  updateRate();
+                }
+                if (duration > config.lastDuration) {
+                  config.inptimeout = Math.round(1.1 * config.inptimeout);
+                  config.lastDuration = duration;
+                  updateRate();
+                }
+              }
             };
             webSocket.addEventListener("open", () => {
               console.log("Connected")
