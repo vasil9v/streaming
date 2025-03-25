@@ -111,7 +111,7 @@ const server = http.createServer((req, res) => {
   }
 
   if (req.url == '/populate') {
-    populateData();
+    populateData(5000);
     res.end('OK');
     return;
   }
