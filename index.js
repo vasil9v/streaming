@@ -3,14 +3,38 @@ import fs from 'node:fs';
 import querystring from 'node:querystring';
 import { open } from 'lmdb';
 
-let myDB = open({
+const myDB = open({
   path: 'my-stream-db',
   compression: true,
 });
 
 const hostname = '127.0.0.1';
 const port = 9000;
+
 let distinctCache = {};
+
+function collectDistinct(value) {
+  for (let i of ['breed', 'is_good']) {
+    if(!distinctCache[i]) {
+      distinctCache[i] = {};
+    }
+    distinctCache[i][value[i]] = 1;
+  }
+}
+
+function testCollectDistinct() {
+  distinctCache = {};
+  const records = [
+    {'id': 1, 'breed': 'French Bulldog', 'is_good': true, 'name': 'Pierre'},
+    {'id': 2, 'breed': 'Siberian Husky', 'is_good': true, 'name': 'Wolf'},
+    {'id': 3, 'breed': 'Siberian Husky', 'is_good': true, 'name': 'Blake'}
+  ];
+  records.map(function (x) {collectDistinct(x);});
+  console.assert('breed' in distinctCache);
+  console.assert('is_good' in distinctCache);
+  console.assert(Object.keys(distinctCache['is_good'].length == 1));
+  console.assert(Object.keys(distinctCache['breed'].length == 2));
+}
 
 const server = http.createServer((req, res) => {
   res.statusCode = 200;
@@ -44,17 +68,11 @@ const server = http.createServer((req, res) => {
     myDB.getRange({start: start, end: end, limit: 1000, sArray: true })
       // .filter(({ key, value }) => test(key)) // TODO
       .forEach(({ key, value }) => {
-        for (let i of ['breed', 'is_good']) {
-          if(!distinctCache[i]) {
-            distinctCache[i] = {};
-          }
-          distinctCache[i][value[i]] = 1;
-        }
+        collectDistinct(value);
         results.push({key: key, value: value})
       });
     res.end(JSON.stringify(results));
     return;
-
     // response.write() response.writeContinue() - https://nodejs.org/api/http.html#responsewritechunk-encoding-callback
   }
 
@@ -72,7 +90,7 @@ const server = http.createServer((req, res) => {
   res.end('unknown endpoint');
 });
 
-function populateData() {
+function populateData(num = 1000) {
   const breeds = [
     'German Shepherd',
     'Bulldog',
@@ -87,7 +105,7 @@ function populateData() {
     'Australian Cattle Dog',
     'Dachshund'
   ]
-  for(let i = 0; i < 1000; i += 1) {
+  for(let i = 0; i < num; i += 1) {
     let record = {
         id: i,
         is_good: true,
@@ -97,6 +115,8 @@ function populateData() {
     myDB.put(i, record);
   }
 }
+
+testCollectDistinct();
 
 server.listen(port, hostname, () => {
   console.log(`Server running at http://${hostname}:${port}/`);
