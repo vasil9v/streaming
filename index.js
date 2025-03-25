@@ -60,6 +60,9 @@ let config = {
 };
 
 function streamChunk() {
+  if (!Object.keys(config.clients).length > 0) {
+    return;
+  }
   console.log('ptr: ' + config.ptr);
   getRecords(config.ptr, config.ptr + config.size, (results, items) => {
     wss.clients.forEach(client => {
@@ -74,7 +77,10 @@ function streamChunk() {
 }
 
 wss.on('connection', ws => {
-  ws.on('close', () => console.log('Client has disconnected!'));
+  ws.on('close', () => {
+    console.log('Client has disconnected!');
+    config.clients = {}; // FIXME figure out how to grab the client ID
+  });
   ws.on('message', data => {
     console.log('connected, clientId: ' + data);
     if (!config.clients[data]) {
