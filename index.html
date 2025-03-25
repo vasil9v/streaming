@@ -54,6 +54,7 @@
 
               size: 100,
               inptimeout: 500,
+              clientId: "client1"
             };
             const navigateTo = (sel) => {
               $(".page").hide();
@@ -69,7 +70,6 @@
               for (let e = 0; e < events.length; e += 1) {
                 // {"key":1096,"value":{"id":1096,"is_good":true,"breed":"French Bulldog","ts":1742849658880}}
                 let event = events[e];
-                console.log('event: ' + event);
                 let elem = $("#templateevent").clone().removeClass("template").attr("id", event.id);
                 elem.attr("data-id", event.id);
                 elem.find(".key").text(event.key);
@@ -157,7 +157,7 @@
             };
             webSocket.addEventListener("open", () => {
               console.log("Connected")
-              webSocket.send("start");
+              webSocket.send(config.clientId);
             });
 
             $(document).ready(() => {

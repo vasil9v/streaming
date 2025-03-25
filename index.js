@@ -55,13 +55,13 @@ function getRecords(start, end, cb) {
 let config = {
   ptr: 0,
   size: 100,
-  period: 500
+  period: 500,
+  clients: {}
 };
 
 function streamChunk() {
   console.log('ptr: ' + config.ptr);
   getRecords(config.ptr, config.ptr + config.size, (results, items) => {
-    // FIXME dedup clients
     wss.clients.forEach(client => {
       client.send(JSON.stringify(results));
     });
@@ -74,12 +74,13 @@ function streamChunk() {
 }
 
 wss.on('connection', ws => {
-  console.log('New client connected!');
-  // ws.send('connection established');
   ws.on('close', () => console.log('Client has disconnected!'));
   ws.on('message', data => {
-    console.log('message: ' + data);
-    setTimeout(streamChunk, config.period);
+    console.log('connected, clientId: ' + data);
+    if (!config.clients[data]) {
+      config.clients[data] = 1;
+      setTimeout(streamChunk, config.period);
+    }
   });
   ws.onerror = () => {
     console.log('websocket error');
