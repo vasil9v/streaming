@@ -30,7 +30,9 @@
     </head>
     <body>
         <div class="main">
+          <!--
           <a href="#" class="aclickstart">Start</a><br/>
+          -->
           Period: <input id="inptimeout" value="500"><br/>
           Size: <input id="inpsize" value="100"><br/>
           <div class="page" id="divevents"></div>
@@ -82,18 +84,18 @@
               }
             };
 
-            const getChunk = (start, end, cb) => {
-              $.ajax({
-                url: "/stream?start=" + start + "&end=" + end,
-                type: 'GET',
-                contentType: 'application/json',
-                success: cb,
-                error: e => {
-                  console.log("error: " + JSON.stringify(e));
-                  cb(e.responseJSON);
-                }
-              });
-            };
+            // const getChunk = (start, end, cb) => {
+            //   $.ajax({
+            //     url: "/stream?start=" + start + "&end=" + end,
+            //     type: 'GET',
+            //     contentType: 'application/json',
+            //     success: cb,
+            //     error: e => {
+            //       console.log("error: " + JSON.stringify(e));
+            //       cb(e.responseJSON);
+            //     }
+            //   });
+            // };
 
             // const poller = () => {
             //   if(config.streaming) {
@@ -165,11 +167,13 @@
               if (events.length >= config.size) {
                 if (duration < config.lastDuration) {
                   config.inptimeout = Math.round(0.9 * config.inptimeout);
+                  $("#inptimeout").val(config.inptimeout);
                   config.lastDuration = duration;
                   updateRate();
                 }
                 if (duration > config.lastDuration) {
                   config.inptimeout = Math.round(1.1 * config.inptimeout);
+                  $("#inptimeout").val(config.inptimeout);
                   config.lastDuration = duration;
                   updateRate();
                 }
