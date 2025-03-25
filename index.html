@@ -36,7 +36,7 @@
           <div class="page" id="divevents"></div>
         </div>
 
-        <div class="template" id="templateevent">
+        <div class="template event" id="templateevent">
           Key: <span class="key"></span>
           ID: <span class="id"></span>
           TS: <span class="ts"></span>
@@ -54,20 +54,20 @@
               streaming: true,
               inptimeout: 2000,
             };
-            let navigateTo = function(sel) {
+            const navigateTo = function(sel) {
               $(".page").hide();
               return $(sel).show();
             };
-            let muteEvent = function(e) {
+            const muteEvent = function(e) {
               e.preventDefault();
               e.stopPropagation();
             };
 
-            let prettyDate = function(s) {
+            const prettyDate = function(s) {
               return s;
             };
 
-            let drawList = function(events, sel) {
+            const drawList = function(events, sel) {
               $("#divevents").empty();
               for (let e = 0; e < events.length; e += 1) {
                 // {"key":1096,"value":{"id":1096,"is_good":true,"breed":"French Bulldog","ts":1742849658880}}
@@ -83,7 +83,7 @@
               }
             };
 
-            let getChunk = function (start, end, cb) {
+            const getChunk = function (start, end, cb) {
                 $.ajax({
                     url: "/stream?start=" + start + "&end=" + end,
                     type: 'GET',
@@ -96,7 +96,7 @@
                 });
             };
 
-            let poller = function () {
+            const poller = function () {
               if(config.streaming) {
                 getChunk(config.start, config.end, function (data) {
                   drawList(data, "#divevents")
@@ -113,7 +113,7 @@
               setTimeout(poller, config.inptimeout)
             };
 
-            let handleClickStop = function (e) {
+            const handleClickStop = function (e) {
               muteEvent(e);
               let val = $(this).text();
               if (val == "Stop") {
@@ -126,7 +126,7 @@
               }
             };
 
-            let handleChange = function (e) {
+            const handleChange = function (e) {
               muteEvent(e);
               let val = Number($(this).val());
               // console.log($(this).attr("id") + ": " + val);
