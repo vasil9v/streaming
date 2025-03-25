@@ -2,7 +2,9 @@
 
 Solution for the Harper Node.js Engineer Challenge submitted by [vasil9v](https://github.com/vasil9v).
 
-The solution wraps a simple node.js webserver around [lmdb-js](https://github.com/kriszyp/lmdb-js) to illustrate the streaming of records via a simple HTTP endpoint called `/streaming` which accepts optional `start` and `end` values which correspond to the parameters then passed to the lmdb-js `getRange()` [method](https://github.com/kriszyp/lmdb-js?tab=readme-ov-file#dbgetrangeoptions-rangeoptions-iterable-key-value-buffer-).
+The solution wraps a simple node.js webserver around [lmdb-js](https://github.com/kriszyp/lmdb-js) to illustrate the streaming of records. A websocket is established which continuously streams records from the database into the socket which the client draws on the screen. The client can set the period and size of the rate at which the server queries records and sends them to the client. These values are sent to the server via an out-of-band endpoint called `/rate`. There is no polling on the client.
+
+Note that a previous version of the solution utilized a polling design via a simple HTTP endpoint called `/streaming` which accepts optional `start` and `end` values which correspond to the parameters then passed to the lmdb-js `getRange()` [method](https://github.com/kriszyp/lmdb-js?tab=readme-ov-file#dbgetrangeoptions-rangeoptions-iterable-key-value-buffer-). This code is still present and can still be used for comparison:
 
 ```
 # fetch records with key values 200 to 399

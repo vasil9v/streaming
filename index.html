@@ -31,8 +31,8 @@
     <body>
         <div class="main">
           <a href="#" class="aclickstart">Start</a><br/>
-          Period: <input id="inptimeout" value="2000"><br/>
-          Size: <input id="inpsize" value="50"><br/>
+          Period: <input id="inptimeout" value="500"><br/>
+          Size: <input id="inpsize" value="100"><br/>
           <div class="page" id="divevents"></div>
         </div>
 
@@ -47,14 +47,15 @@
         <script>
             let config = {
               sitename: "Streaming",
-              init: 1000,
-              start: 1000,
-              end: 1050,
-              size: 50,
+              init: 0,
+              start: 0,
+              end: 50,
               streaming: false,
-              inptimeout: 2000,
+
+              size: 100,
+              inptimeout: 500,
             };
-            const navigateTo = function(sel) {
+            const navigateTo = (sel) => {
               $(".page").hide();
               return $(sel).show();
             };
@@ -63,11 +64,7 @@
               e.stopPropagation();
             };
 
-            const prettyDate = function(s) {
-              return s;
-            };
-
-            const drawList = function(events, sel) {
+            const drawList = (events, sel) => {
               $("#divevents").empty();
               for (let e = 0; e < events.length; e += 1) {
                 // {"key":1096,"value":{"id":1096,"is_good":true,"breed":"French Bulldog","ts":1742849658880}}
@@ -84,35 +81,35 @@
               }
             };
 
-            const getChunk = function (start, end, cb) {
-                $.ajax({
-                    url: "/stream?start=" + start + "&end=" + end,
-                    type: 'GET',
-                    contentType: 'application/json',
-                    success: cb,
-                    error: e => {
-                      console.log("error: " + JSON.stringify(e));
-                      cb(e.responseJSON);
-                    }
-                });
+            const getChunk = (start, end, cb) => {
+              $.ajax({
+                url: "/stream?start=" + start + "&end=" + end,
+                type: 'GET',
+                contentType: 'application/json',
+                success: cb,
+                error: e => {
+                  console.log("error: " + JSON.stringify(e));
+                  cb(e.responseJSON);
+                }
+              });
             };
 
-            const poller = function () {
-              if(config.streaming) {
-                getChunk(config.start, config.end, function (data) {
-                  drawList(data, "#divevents");
-                  config.start += data.length;
-                  config.end += data.length;
+            // const poller = () => {
+            //   if(config.streaming) {
+            //     getChunk(config.start, config.end, (data) => {
+            //       drawList(data, "#divevents");
+            //       config.start += data.length;
+            //       config.end += data.length;
 
-                  // loop
-                  if (data.length < config.size) {
-                    config.start = config.init;
-                    config.end = config.init + config.size;
-                  }
-                });
-              }
-              setTimeout(poller, config.inptimeout)
-            };
+            //       // loop
+            //       if (data.length < config.size) {
+            //         config.start = config.init;
+            //         config.end = config.init + config.size;
+            //       }
+            //     });
+            //   }
+            //   setTimeout(poller, config.inptimeout)
+            // };
 
             const handleClickStop = function (e) {
               muteEvent(e);
@@ -130,7 +127,6 @@
             const handleChange = function (e) {
               muteEvent(e);
               let val = Number($(this).val());
-              // console.log($(this).attr("id") + ": " + val);
               if ($(this).attr("id") == "inptimeout") {
                 config.inptimeout = val;
               }
@@ -138,13 +134,15 @@
                 config.size = val;
               }
 
+              let cb = (data) => {
+                console.log('config: ' + JSON.stringify(data));
+              };
+
               $.ajax({
                   url: "/rate?size=" + config.size + "&period=" + config.inptimeout,
                   type: 'GET',
                   contentType: 'application/json',
-                  success: function (data) {
-                    console.log('config: ' + JSON.stringify(data));
-                  },
+                  success: cb,
                   error: e => {
                     console.log("error: " + JSON.stringify(e));
                     cb(e.responseJSON);
@@ -162,10 +160,10 @@
               webSocket.send("start");
             });
 
-            $(document).ready(function() {
+            $(document).ready(() => {
               $("title").text(config.sitename);
               $(".brand").text(config.sitename);
-              setTimeout(poller, config.inptimeout);
+              // setTimeout(poller, config.inptimeout);
               navigateTo("#divevents");
               $(".aclickstart").click(handleClickStop);
               $("#inptimeout").change(handleChange);

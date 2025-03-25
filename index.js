@@ -32,7 +32,7 @@ function testCollectDistinct() {
     {'id': 2, 'breed': 'Siberian Husky', 'is_good': true, 'name': 'Wolf'},
     {'id': 3, 'breed': 'Siberian Husky', 'is_good': true, 'name': 'Blake'}
   ];
-  records.map(function (x) {collectDistinct(x);});
+  records.map((x) => {collectDistinct(x);});
   console.assert('breed' in distinctCache);
   console.assert('is_good' in distinctCache);
   console.assert(Object.keys(distinctCache['is_good'].length == 1));
@@ -60,7 +60,8 @@ let config = {
 
 function streamChunk() {
   console.log('ptr: ' + config.ptr);
-  getRecords(config.ptr, config.ptr + config.size, function (results, items) {
+  getRecords(config.ptr, config.ptr + config.size, (results, items) => {
+    // FIXME dedup clients
     wss.clients.forEach(client => {
       client.send(JSON.stringify(results));
     });
@@ -80,7 +81,7 @@ wss.on('connection', ws => {
     console.log('message: ' + data);
     setTimeout(streamChunk, config.period);
   });
-  ws.onerror = function () {
+  ws.onerror = () => {
     console.log('websocket error');
   };
 });
@@ -122,7 +123,7 @@ const server = http.createServer((req, res) => {
     let start = Number(query.start || 0);
     let end = Number(query.end || 100);
 
-    getRecords(start, end, function (results, items) {
+    getRecords(start, end, (results, items) => {
       res.end(JSON.stringify(results));
     });
     return;
