@@ -34,6 +34,7 @@ function testCollectDistinct() {
   console.assert('is_good' in distinctCache);
   console.assert(Object.keys(distinctCache['is_good'].length == 1));
   console.assert(Object.keys(distinctCache['breed'].length == 2));
+  distinctCache = {};
 }
 
 const server = http.createServer((req, res) => {
