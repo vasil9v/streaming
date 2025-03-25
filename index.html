@@ -30,7 +30,7 @@
     </head>
     <body>
         <div class="main">
-          <a href="#" class="aclickstart">Stop</a><br/>
+          <a href="#" class="aclickstart">Start</a><br/>
           Period: <input id="inptimeout" value="2000"><br/>
           Size: <input id="inpsize" value="50"><br/>
           <div class="page" id="divevents"></div>
@@ -51,7 +51,7 @@
               start: 1000,
               end: 1050,
               size: 50,
-              streaming: true,
+              streaming: false,
               inptimeout: 2000,
             };
             const navigateTo = function(sel) {
@@ -72,6 +72,7 @@
               for (let e = 0; e < events.length; e += 1) {
                 // {"key":1096,"value":{"id":1096,"is_good":true,"breed":"French Bulldog","ts":1742849658880}}
                 let event = events[e];
+                console.log('event: ' + event);
                 let elem = $("#templateevent").clone().removeClass("template").attr("id", event.id);
                 elem.attr("data-id", event.id);
                 elem.find(".key").text(event.key);
@@ -99,7 +100,7 @@
             const poller = function () {
               if(config.streaming) {
                 getChunk(config.start, config.end, function (data) {
-                  drawList(data, "#divevents")
+                  drawList(data, "#divevents");
                   config.start += data.length;
                   config.end += data.length;
 
@@ -136,7 +137,30 @@
               if ($(this).attr("id") == "inpsize") {
                 config.size = val;
               }
+
+              $.ajax({
+                  url: "/rate?size=" + config.size + "&period=" + config.inptimeout,
+                  type: 'GET',
+                  contentType: 'application/json',
+                  success: function (data) {
+                    console.log('config: ' + JSON.stringify(data));
+                  },
+                  error: e => {
+                    console.log("error: " + JSON.stringify(e));
+                    cb(e.responseJSON);
+                  }
+              });
             };
+
+            // websocket handlers
+            const webSocket = new WebSocket('ws://localhost:9001/');
+            webSocket.onmessage = (event) => {
+              drawList(JSON.parse(event.data), "#divevents");
+            };
+            webSocket.addEventListener("open", () => {
+              console.log("Connected")
+              webSocket.send("start");
+            });
 
             $(document).ready(function() {
               $("title").text(config.sitename);

@@ -1,6 +1,7 @@
 {
   "type": "module",
   "dependencies": {
-    "lmdb": "^3.2.6"
+    "lmdb": "^3.2.6",
+    "ws": "^8.18.1"
   }
 }
