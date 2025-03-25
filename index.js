@@ -4,17 +4,23 @@ import fs from 'node:fs';
 import querystring from 'node:querystring';
 import { open } from 'lmdb';
 
-const wss = new WebSocketServer({ port: 9001 });
+let config = {
+  hostname: '127.0.0.1',
+  port: 9000,
+  ptr: 0,
+  size: 100,
+  period: 500,
+  clients: {}
+};
 
-const myDB = open({
+let distinctCache = {};
+
+const wss = new WebSocketServer({ port: config.port + 1 });
+
+config.myDB = open({
   path: 'my-stream-db',
   compression: true,
 });
-
-const hostname = '127.0.0.1';
-const port = 9000;
-
-let distinctCache = {};
 
 function collectDistinct(value) {
   for (let i of ['breed', 'is_good']) {
@@ -41,9 +47,9 @@ function testCollectDistinct() {
 }
 
 function getRecords(start, end, cb) {
-  // let results = myDB.getRange({start: start, end: end, limit: 1000, sArray: true });
+  // let results = config.myDB.getRange({start: start, end: end, limit: 1000, sArray: true });
   let results =[];
-  myDB.getRange({start: start, end: end, limit: 1000, sArray: true })
+  config.myDB.getRange({start: start, end: end, limit: 1000, sArray: true })
   // .filter(({ key, value }) => test(key)) // TODO
   .forEach(({ key, value }) => {
     collectDistinct(value);
@@ -52,18 +58,11 @@ function getRecords(start, end, cb) {
   cb && cb(results, results.length);
 }
 
-let config = {
-  ptr: 0,
-  size: 100,
-  period: 500,
-  clients: {}
-};
-
 function streamChunk() {
   if (!Object.keys(config.clients).length > 0) {
     return;
   }
-  console.log('ptr: ' + config.ptr);
+  console.log('ptr: ' + config.ptr + ', size: ' + config.size + ', period: ' + config.period);
   getRecords(config.ptr, config.ptr + config.size, (results, items) => {
     wss.clients.forEach(client => {
       client.send(JSON.stringify(results));
@@ -120,7 +119,6 @@ const server = http.createServer((req, res) => {
     let query = querystring.parse(req.url.split('?')[1]);
     config.size = Number(query.size || 100);
     config.period = Number(query.period || 500);
-    console.log('config: ' + JSON.stringify(config));
     res.end(JSON.stringify(config));
     return;
   }
@@ -172,12 +170,12 @@ function populateData(num = 1000) {
         breed: breeds[i % breeds.length],
         ts: Date.now()
     };
-    myDB.put(i, record);
+    config.myDB.put(i, record);
   }
 }
 
 testCollectDistinct();
 
-server.listen(port, hostname, () => {
-  console.log(`Server running at http://${hostname}:${port}/`);
+server.listen(config.port, config.hostname, () => {
+  console.log(`Server running at http://${config.hostname}:${config.port}/`);
 });
