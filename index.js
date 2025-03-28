@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import querystring from 'node:querystring';
 import { open } from 'lmdb';
 
-let config = {
+const config = {
   hostname: '127.0.0.1',
   port: 9000,
   ptr: 0,
@@ -22,7 +22,7 @@ config.myDB = open({
   compression: true,
 });
 
-function collectDistinct(value) {
+const collectDistinct = (value) => {
   for (let i of ['breed', 'is_good']) {
     if(!distinctCache[i]) {
       distinctCache[i] = {};
@@ -31,7 +31,7 @@ function collectDistinct(value) {
   }
 }
 
-function testCollectDistinct() {
+const testCollectDistinct = () => {
   distinctCache = {};
   const records = [
     {'id': 1, 'breed': 'French Bulldog', 'is_good': true, 'name': 'Pierre'},
@@ -46,7 +46,7 @@ function testCollectDistinct() {
   distinctCache = {};
 }
 
-function getRecords(start, end, cb) {
+const getRecords = (start, end, cb) => {
   // let results = config.myDB.getRange({start: start, end: end, limit: 1000, sArray: true });
   let results =[];
   config.myDB.getRange({start: start, end: end, limit: 1000, sArray: true })
@@ -58,7 +58,7 @@ function getRecords(start, end, cb) {
   cb && cb(results, results.length);
 }
 
-function streamChunk() {
+const streamChunk = () => {
   if (!Object.keys(config.clients).length > 0) {
     return;
   }
@@ -98,15 +98,13 @@ const server = http.createServer((req, res) => {
 
   if (req.url.startsWith('/log')) {
     console.log(req);
-    res.end('OK');
-    return;
+    return res.end('OK');
   }
 
   if (req.url == '/' || req.url == '/index.html') {
     res.setHeader('Content-Type', 'text/html');
     let index = fs.readFileSync('index.html');
-    res.end(index);
-    return;
+    return res.end(index);
   }
 
   if (req.url == '/populate') {
@@ -119,8 +117,7 @@ const server = http.createServer((req, res) => {
     let query = querystring.parse(req.url.split('?')[1]);
     config.size = Number(query.size || 100);
     config.period = Number(query.period || 500);
-    res.end(JSON.stringify(config));
-    return;
+    return res.end(JSON.stringify({size: config.size, period: config.period}));
   }
 
   if (req.url.startsWith('/stream')) {
@@ -148,7 +145,7 @@ const server = http.createServer((req, res) => {
   res.end('unknown endpoint');
 });
 
-function populateData(num = 1000) {
+const populateData = (num = 1000) => {
   const breeds = [
     'German Shepherd',
     'Bulldog',
