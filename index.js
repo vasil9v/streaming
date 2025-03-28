@@ -48,7 +48,7 @@ const testCollectDistinct = () => {
 
 const getRecords = (start, end, cb) => {
   let results =[];
-  config.myDB.getRange({start: start, end: end, limit: 1000, sArray: true })
+  config.myDB.getRange({start: start, end: end, limit: 1000, asArray: true })
   // .filter(({ key, value }) => test(key)) // TODO
   .forEach(({ key, value }) => {
     collectDistinct(value);
@@ -74,7 +74,9 @@ const streamChunk = () => {
   setTimeout(streamChunk, config.period);
 }
 
-wss.on('connection', ws => {
+wss.on('connection', (ws, req) => {
+  // console.info(req.client);
+  // console.info(req.url);
   ws.on('close', () => {
     console.log('Client has disconnected!');
     config.clients = {}; // FIXME figure out how to grab the client ID

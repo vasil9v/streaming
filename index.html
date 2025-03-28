@@ -70,7 +70,7 @@
 
             const drawList = (events, sel) => {
               $("#divevents").empty();
-              for (let event of events) {
+              for (const event of events) {
                 // {"key":1096,"value":{"id":1096,"is_good":true,"breed":"French Bulldog","ts":1742849658880}}
                 let elem = $("#templateevent").clone().removeClass("template").attr("id", event.id);
                 elem.attr("data-id", event.id);
