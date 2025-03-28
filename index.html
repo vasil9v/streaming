@@ -9,7 +9,7 @@
       <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
       <style>
         body {
-          font-family: arial;
+          font-family: 'Courier New', Courier, monospace;
         }
         a {
           text-decoration: none;
@@ -42,8 +42,8 @@
           Key: <span class="key"></span>
           ID: <span class="id"></span>
           TS: <span class="ts"></span>
-          Breed: <span class="breed"></span>
           Good: <span class="is_good"></span>
+          Breed: <span class="breed"></span>
         </div>
 
         <script>
@@ -70,9 +70,8 @@
 
             const drawList = (events, sel) => {
               $("#divevents").empty();
-              for (let e = 0; e < events.length; e += 1) {
+              for (let event of events) {
                 // {"key":1096,"value":{"id":1096,"is_good":true,"breed":"French Bulldog","ts":1742849658880}}
-                let event = events[e];
                 let elem = $("#templateevent").clone().removeClass("template").attr("id", event.id);
                 elem.attr("data-id", event.id);
                 elem.find(".key").text(event.key);
@@ -114,18 +113,18 @@
             //   setTimeout(poller, config.inptimeout)
             // };
 
-            const handleClickStop = function (e) {
-              muteEvent(e);
-              let val = $(this).text();
-              if (val == "Stop") {
-                config.streaming = false;
-                $(this).text("Start");
-              }
-              else if (val == "Start") {
-                config.streaming = true;
-                $(this).text("Stop");
-              }
-            };
+            // const handleClickStop = function (e) {
+            //   muteEvent(e);
+            //   let val = $(this).text();
+            //   if (val == "Stop") {
+            //     config.streaming = false;
+            //     $(this).text("Start");
+            //   }
+            //   else if (val == "Start") {
+            //     config.streaming = true;
+            //     $(this).text("Stop");
+            //   }
+            // };
 
             const updateRate = () => {
               let cb = (data) => {
@@ -189,7 +188,7 @@
               $(".brand").text(config.sitename);
               // setTimeout(poller, config.inptimeout);
               navigateTo("#divevents");
-              $(".aclickstart").click(handleClickStop);
+              // $(".aclickstart").click(handleClickStop);
               $("#inptimeout").change(handleChange);
               $("#inpsize").change(handleChange);
             });
