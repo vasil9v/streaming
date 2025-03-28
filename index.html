@@ -90,7 +90,7 @@
             //     contentType: 'application/json',
             //     success: cb,
             //     error: e => {
-            //       console.log("error: " + JSON.stringify(e));
+            //       console.log(`error: ${JSON.stringify(e)}`);
             //       cb(e.responseJSON);
             //     }
             //   });
@@ -128,7 +128,7 @@
 
             const updateRate = () => {
               let cb = (data) => {
-                console.log('config: ' + JSON.stringify(data));
+                console.log(`config: ${JSON.stringify(data)}`);
               };
 
               $.ajax({
@@ -137,7 +137,7 @@
                   contentType: 'application/json',
                   success: cb,
                   error: e => {
-                    console.log("error: " + JSON.stringify(e));
+                    console.log(`error: ${JSON.stringify(e)}`);
                     cb(e.responseJSON);
                   }
               });
@@ -162,7 +162,7 @@
               let events = JSON.parse(event.data);
               drawList(events, "#divevents");
               let duration = Date.now() - tsStart;
-              console.log('duration: ' + duration);
+              console.log(`duration: ${ duration}`);
               if (events.length >= config.size) {
                 if (duration < config.lastDuration) {
                   config.inptimeout = Math.round(0.9 * config.inptimeout);
@@ -179,7 +179,7 @@
               }
             };
             webSocket.addEventListener("open", () => {
-              console.log("Connected")
+              console.log('Connected')
               webSocket.send(config.clientId);
             });
 

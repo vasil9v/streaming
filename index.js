@@ -47,7 +47,6 @@ const testCollectDistinct = () => {
 }
 
 const getRecords = (start, end, cb) => {
-  // let results = config.myDB.getRange({start: start, end: end, limit: 1000, sArray: true });
   let results =[];
   config.myDB.getRange({start: start, end: end, limit: 1000, sArray: true })
   // .filter(({ key, value }) => test(key)) // TODO
@@ -62,7 +61,7 @@ const streamChunk = () => {
   if (!Object.keys(config.clients).length > 0) {
     return;
   }
-  console.log('ptr: ' + config.ptr + ', size: ' + config.size + ', period: ' + config.period);
+  console.log(`ptr: ${config.ptr}, size: ${config.size}, period: ${config.period}`);
   getRecords(config.ptr, config.ptr + config.size, (results, items) => {
     wss.clients.forEach(client => {
       client.send(JSON.stringify(results));
@@ -81,7 +80,7 @@ wss.on('connection', ws => {
     config.clients = {}; // FIXME figure out how to grab the client ID
   });
   ws.on('message', data => {
-    console.log('connected, clientId: ' + data);
+    console.log(`connected, clientId: ${data}`);
     if (!config.clients[data]) {
       config.clients[data] = 1;
       setTimeout(streamChunk, config.period);
@@ -117,7 +116,10 @@ const server = http.createServer((req, res) => {
     let query = querystring.parse(req.url.split('?')[1]);
     config.size = Number(query.size || 100);
     config.period = Number(query.period || 500);
-    return res.end(JSON.stringify({size: config.size, period: config.period}));
+    return res.end(JSON.stringify({
+      size: config.size,
+      period: config.period
+    }));
   }
 
   if (req.url.startsWith('/stream')) {
